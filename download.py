@@ -50,7 +50,7 @@ def download(vidinfo):
         logging.exception('')
         return return_msg
 
-    return '{}, DONE!'.format(vidinfo.yt_id)
+    return f'{vidinfo.yt_id}, DONE!'.format(vidinfo.yt_id)
 
 
 if __name__ == '__main__':
@@ -61,7 +61,9 @@ if __name__ == '__main__':
 
     os.makedirs(out_dir, exist_ok=True)
 
-    numberToDownload = 150
+    #first time 0-30000
+    numberToDownload = 10
+    startPoint = 300000
 
     vidinfos = []
 
@@ -70,8 +72,9 @@ if __name__ == '__main__':
         lines = [x.split(',') for x in lines]
         vidinfos = [VidInfo(x[0], x[1], x[2], out_dir) for x in lines]
 
-    bad_files = open('bad_files_{}.txt'.format(split), 'w')
-    results = ThreadPool(5).imap_unordered(download, vidinfos[0:numberToDownload])
+    bad_files = open('bad_files_{}.txt'.format(split), 'a')
+    download_idx = open('download_idx_{}.txt'.format(split), 'a')
+    results = ThreadPool(5).imap_unordered(download, vidinfos[startPoint: startPoint + numberToDownload])
     cnt = 0
     for r in results:
         cnt += 1
@@ -79,3 +82,5 @@ if __name__ == '__main__':
         if 'ERROR' in r:
             bad_files.write(r + '\n')
     bad_files.close()
+
+    download_idx.write(f"Downloaded from {startPoint} to {startPoint + numberToDownload}" + '\n')
